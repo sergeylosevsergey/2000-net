@@ -1,24 +1,48 @@
 [General]
+# Основные настройки
 bypass-system = true
-skip-proxy = 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, localhost, *.local
-dns-server = 1.1.1.1, 8.8.8.8
+skip-proxy = 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, localhost, *.local, captive.apple.com
+# DNS: Сначала системный (провайдера), затем Яндекс, затем Google
+dns-server = system, 77.88.8.8, 8.8.8.8, 1.1.1.1
+# Приоритет локального резолва
+prefer-ipv6 = false
+icu-test-url = http://www.apple.com/library/test/success.html
+
+[Proxy]
+# Твой сервер VLESS Reality
+Main-iCloud = vless, 138.124.108.154, 443, password=ТВОЙ_UUID, sni=www.icloud.com, vless-reality=true, public-key=ТВОЙ_PUBLIC_KEY, short-id=1a2b3c4d, tfo=true, udp-relay=true
+
+[Proxy Group]
+# Группа выбора для FINAL правила
+Proxy = select, Main-iCloud, DIRECT
 
 [Rule]
-# 1. Запрет торрентов
+# 1. Запрет торрентов (чтобы хостинг не забанил за абузы)
 PROTOCOL,BITTORRENT,REJECT
 
-# 2. Россия напрямую (по доменам)
-DOMAIN-MATCH,^.*\.ru$,DIRECT
-DOMAIN-MATCH,^.*\.рф$,DIRECT
-DOMAIN-MATCH,^.*\.su$,DIRECT
+# 2. DNS-фильтрация (самое важное для работы Яндекса/2ip)
+# Если домен российский — Shadowrocket принудительно идет DIRECT
+DOMAIN-SUFFIX,ru,DIRECT
+DOMAIN-SUFFIX,su,DIRECT
+DOMAIN-SUFFIX,xn--p1ai,DIRECT
+DOMAIN-SUFFIX,ya.ru,DIRECT
+DOMAIN-SUFFIX,yandex.ru,DIRECT
 
-# 3. Россия напрямую (по спискам и IP)
-DOMAIN-SET,https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite-ru.txt,DIRECT
+# 3. Прямой доступ для тяжелого трафика (обновления Apple/MS)
+DOMAIN-SET,https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/apple-cn.txt,DIRECT
+DOMAIN-SET,https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/microsoft.txt,DIRECT
+
+# 4. Проверка по IP (если домен не определен, но IP российский — напрямую)
 GEOIP,RU,DIRECT
 
-# 4. Тяжелые сервисы (Apple/MS) напрямую
-DOMAIN-SET,https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/apple-cn.txt,DIRECT
+# 5. Локальные сети напрямую
+IP-CIDR,192.168.0.0/16,DIRECT
+IP-CIDR,10.0.0.0/8,DIRECT
+IP-CIDR,172.16.0.0/12,DIRECT
 
-# 5. Всё остальное — через прокси
-# Слово "Proxy" здесь означает: использовать тот сервер, который выбран на главной
+# 6. Финальное правило: всё остальное в туннель
 FINAL,Proxy
+
+[Host]
+# Локальный резолв для критичных узлов
+localhost = 127.0.0.1
