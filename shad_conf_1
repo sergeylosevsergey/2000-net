@@ -1,0 +1,24 @@
+[General]
+bypass-system = true
+skip-proxy = 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, localhost, *.local
+dns-server = 1.1.1.1, 8.8.8.8
+
+[Rule]
+# 1. Запрет торрентов
+PROTOCOL,BITTORRENT,REJECT
+
+# 2. Россия напрямую (по доменам)
+DOMAIN-MATCH,^.*\.ru$,DIRECT
+DOMAIN-MATCH,^.*\.рф$,DIRECT
+DOMAIN-MATCH,^.*\.su$,DIRECT
+
+# 3. Россия напрямую (по спискам и IP)
+DOMAIN-SET,https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite-ru.txt,DIRECT
+GEOIP,RU,DIRECT
+
+# 4. Тяжелые сервисы (Apple/MS) напрямую
+DOMAIN-SET,https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/apple-cn.txt,DIRECT
+
+# 5. Всё остальное — через прокси
+# Слово "Proxy" здесь означает: использовать тот сервер, который выбран на главной
+FINAL,Proxy
