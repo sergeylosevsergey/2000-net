@@ -7,21 +7,46 @@ dns-server = 1.1.1.1, 8.8.8.8, 77.88.8.8
 dns-direct-system = false
 
 [Rule]
-# 1. Сначала жестко прописываем DNS для России через DIRECT
-# Это заставит Shadowrocket спрашивать про эти домены у локального провайдера
+# 1. Локальная сеть (Обязательно для работы AirDrop, роутеров, умного дома)
+IP-CIDR,192.168.0.0/16,DIRECT
+IP-CIDR,10.0.0.0/8,DIRECT
+IP-CIDR,172.16.0.0/12,DIRECT
+IP-CIDR,127.0.0.0/8,DIRECT
+IP-CIDR,100.64.0.0/10,DIRECT
+IP-CIDR6,::1/128,DIRECT
+IP-CIDR6,fc00::/7,DIRECT
+IP-CIDR6,fe80::/10,DIRECT
+
+# 2. Блокировка торрентов (Защита VPS от абуз)
+PORT,6881-6889,REJECT
+DOMAIN-KEYWORD,torrent,REJECT
+
+# 3. Российские доменные зоны
 DOMAIN-SUFFIX,ru,DIRECT
 DOMAIN-SUFFIX,su,DIRECT
-DOMAIN-SUFFIX,xn--p1ai,DIRECT
+DOMAIN-SUFFIX,рф,DIRECT
 
-# 2. Торренты
-PROTOCOL,BITTORRENT,REJECT
+# 4. Тяжелый трафик и банки РФ (Экономим канал сервера, снижаем пинг)
+DOMAIN-SUFFIX,yandex.net,DIRECT
+DOMAIN-SUFFIX,yandex.ru,DIRECT
+DOMAIN-SUFFIX,vk.com,DIRECT
+DOMAIN-SUFFIX,vkvideo.ru,DIRECT
+DOMAIN-SUFFIX,mail.ru,DIRECT
+DOMAIN-SUFFIX,gosuslugi.ru,DIRECT
+DOMAIN-SUFFIX,tbank.ru,DIRECT
+DOMAIN-SUFFIX,sberbank.ru,DIRECT
+DOMAIN-SUFFIX,alfabank.ru,DIRECT
+DOMAIN-SUFFIX,ozon.ru,DIRECT
+DOMAIN-SUFFIX,wildberries.ru,DIRECT
 
-# 3. Списки исключений (Apple, MS)
-DOMAIN-SET,https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/apple-cn.txt,DIRECT
-DOMAIN-SET,https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/microsoft.txt,DIRECT
+# 5. Экосистема Apple (Обновления iOS, загрузки из App Store весят гигабайты и работают в РФ)
+DOMAIN-SUFFIX,apple.com,DIRECT
+DOMAIN-SUFFIX,icloud.com,DIRECT
+DOMAIN-SUFFIX,itunes.apple.com,DIRECT
+DOMAIN-SUFFIX,mzstatic.com,DIRECT
 
-# 4. IP-правила
+# 6. Остальные IP-адреса России по базе
 GEOIP,RU,DIRECT
 
-# 5. Всё остальное в прокси
-FINAL,Proxy
+# 7. Зарубежный и неопознанный трафик (Instagram, YouTube, ChatGPT и т.д.)
+FINAL,PROXY
